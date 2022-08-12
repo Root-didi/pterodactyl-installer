@@ -164,11 +164,11 @@ check_os_comp() {
 
 rm_panel_files() {
   output "Removing panel files..."
-  rm -rf /var/www/pterodactyl /usr/local/bin/composer
-  [ "$OS" != "centos" ] && unlink /etc/nginx/sites-enabled/pterodactyl.conf
-  [ "$OS" != "centos" ] && rm -f /etc/nginx/sites-available/pterodactyl.conf
+  rm -rf /var/www/jexactyl /usr/local/bin/composer
+  [ "$OS" != "centos" ] && unlink /etc/nginx/sites-enabled/jexactyl.conf
+  [ "$OS" != "centos" ] && rm -f /etc/nginx/sites-available/jexactyl.conf
   [ "$OS" != "centos" ] && ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
-  [ "$OS" == "centos" ] && rm -f /etc/nginx/conf.d/pterodactyl.conf
+  [ "$OS" == "centos" ] && rm -f /etc/nginx/conf.d/jexactyl.conf
   systemctl restart nginx
   output "Succesfully removed panel files."
 }
@@ -180,7 +180,7 @@ rm_wings_files() {
   systemctl disable --now wings
   rm -rf /etc/systemd/system/wings.service
 
-  rm -rf /etc/pterodactyl /usr/local/bin/wings /var/lib/pterodactyl
+  rm -rf /etc/jexactyl /usr/local/bin/wings /var/lib/jexactyl
   output "Succesfully removed wings files."
 }
 
@@ -203,7 +203,7 @@ rm_services() {
 
 rm_cron() {
   output "Removing cron jobs..."
-  crontab -l | grep -vF "* * * * * php /var/www/pterodactyl/artisan schedule:run >> /dev/null 2>&1" | crontab -
+  crontab -l | grep -vF "* * * * * php /var/www/jexactyl/artisan schedule:run >> /dev/null 2>&1" | crontab -
   output "Succesfully removed cron jobs."
 }
 
@@ -287,14 +287,14 @@ main() {
   print_brake 70
   check_os_comp
 
-  if [ -d "/var/www/pterodactyl" ]; then
+  if [ -d "/var/www/jexactyl" ]; then
     output "Panel installation has been detected."
     echo -e -n "* Do you want to remove panel? (y/N): "
     read -r RM_PANEL_INPUT
     [[ "$RM_PANEL_INPUT" =~ [Yy] ]] && RM_PANEL=true
   fi
 
-  if [ -d "/etc/pterodactyl" ]; then
+  if [ -d "/etc/jexactyl" ]; then
     output "Wings installation has been detected."
     warning "This will remove all the servers!"
     echo -e -n "* Do you want to remove Wings (daemon)? (y/N): "
