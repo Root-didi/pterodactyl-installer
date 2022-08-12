@@ -52,8 +52,8 @@ SCRIPT_RELEASE="canary"
 FQDN=""
 
 # Default MySQL credentials
-MYSQL_DB="jexactyl"
-MYSQL_USER="jexactyl"
+MYSQL_DB="jexactyltest"
+MYSQL_USER="jexactyltst"
 MYSQL_PASSWORD=""
 
 # Environment
@@ -73,7 +73,7 @@ CONFIGURE_LETSENCRYPT=false
 
 # download URLs
 PANEL_DL_URL="https://github.com/jexactyl/jexactyl/releases/latest/download/panel.tar.gz"
-GITHUB_BASE_URL="https://raw.githubusercontent.com/vilhelmprytz/jexactyl-installer/$GITHUB_SOURCE"
+GITHUB_BASE_URL="https://raw.githubusercontent.com/Root-didi/pterodactyl-installer/$GITHUB_SOURCE"
 
 # ufw firewall
 CONFIGURE_UFW=false
