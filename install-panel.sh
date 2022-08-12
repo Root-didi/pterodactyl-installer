@@ -98,7 +98,7 @@ get_latest_release() {
 
 # jexactyl version
 echo "* Retrieving release information.."
-jexactyl_VERSION="$(get_latest_release "jexactyl/panel")"
+jexactyl_VERSION="$(get_latest_release "jexactyl/jexactyl")"
 
 ####### lib func #######
 
