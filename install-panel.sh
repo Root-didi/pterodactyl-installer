@@ -4,7 +4,7 @@ set -e
 
 #############################################################################
 #                                                                           #
-# Project 'jexactyl-installer' for panel                                 #
+# Project 'pterodactyl-installer' for panel                                 #
 #                                                                           #
 # Copyright (C) 2018 - 2022, Vilhelm Prytz, <vilhelm@prytznet.se>           #
 #                                                                           #
@@ -21,10 +21,10 @@ set -e
 #   You should have received a copy of the GNU General Public License       #
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.  #
 #                                                                           #
-# https://github.com/vilhelmprytz/jexactyl-installer/blob/master/LICENSE #
+# https://github.com/vilhelmprytz/pterodactyl-installer/blob/master/LICENSE #
 #                                                                           #
-# This script is not associated with the official jexactyl Project.      #
-# https://github.com/vilhelmprytz/jexactyl-installer                     #
+# This script is not associated with the official Pterodactyl Project.      #
+# https://github.com/vilhelmprytz/pterodactyl-installer                     #
 #                                                                           #
 #############################################################################
 
@@ -52,8 +52,8 @@ SCRIPT_RELEASE="canary"
 FQDN=""
 
 # Default MySQL credentials
-MYSQL_DB="jexactyl"
-MYSQL_USER="jexactyl"
+MYSQL_DB="pterodactyl"
+MYSQL_USER="pterodactyl"
 MYSQL_PASSWORD=""
 
 # Environment
@@ -72,8 +72,8 @@ ASSUME_SSL=false
 CONFIGURE_LETSENCRYPT=false
 
 # download URLs
-PANEL_DL_URL="https://github.com/jexactyl/jexactyl/releases/latest/download/panel.tar.gz"
-GITHUB_BASE_URL="https://raw.githubusercontent.com/vilhelmprytz/jexactyl-installer/$GITHUB_SOURCE"
+PANEL_DL_URL="https://github.com/pterodactyl/panel/releases/latest/download/panel.tar.gz"
+GITHUB_BASE_URL="https://raw.githubusercontent.com/vilhelmprytz/pterodactyl-installer/$GITHUB_SOURCE"
 
 # ufw firewall
 CONFIGURE_UFW=false
@@ -96,9 +96,9 @@ get_latest_release() {
     sed -E 's/.*"([^"]+)".*/\1/'                                    # Pluck JSON value
 }
 
-# jexactyl version
+# pterodactyl version
 echo "* Retrieving release information.."
-jexactyl_VERSION="$(get_latest_release "jexactyl/panel")"
+PTERODACTYL_VERSION="$(get_latest_release "pterodactyl/panel")"
 
 ####### lib func #######
 
@@ -343,7 +343,7 @@ check_os_comp() {
     [ "$OS_VER_MAJOR" == "11" ] && SUPPORTED=true
     ;;
   centos)
-    PHP_SOCKET="/var/run/php-fpm/jexactyl.sock"
+    PHP_SOCKET="/var/run/php-fpm/pterodactyl.sock"
     [ "$OS_VER_MAJOR" == "7" ] && SUPPORTED=true
     [ "$OS_VER_MAJOR" == "8" ] && SUPPORTED=true
     ;;
@@ -371,11 +371,11 @@ install_composer() {
   echo "* Composer installed!"
 }
 
-# Download jexactyl files
+# Download pterodactyl files
 ptdl_dl() {
-  echo "* Downloading jexactyl panel files .. "
-  mkdir -p /var/www/jexactyl
-  cd /var/www/jexactyl || exit
+  echo "* Downloading pterodactyl panel files .. "
+  mkdir -p /var/www/pterodactyl
+  cd /var/www/pterodactyl || exit
 
   curl -Lo panel.tar.gz "$PANEL_DL_URL"
   tar -xzvf panel.tar.gz
@@ -386,7 +386,7 @@ ptdl_dl() {
   COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader
 
   php artisan key:generate --force
-  echo "* Downloaded jexactyl panel files & installed composer dependencies!"
+  echo "* Downloaded pterodactyl panel files & installed composer dependencies!"
 }
 
 # Create a databse with user
@@ -404,7 +404,7 @@ create_database() {
     [ "$OS_VER_MAJOR" == "7" ] && mariadb-secure-installation
     [ "$OS_VER_MAJOR" == "8" ] && mysql_secure_installation
 
-    echo "* The script should have asked you to set the MySQL root password earlier (not to be confused with the jexactyl database user password)"
+    echo "* The script should have asked you to set the MySQL root password earlier (not to be confused with the pterodactyl database user password)"
     echo "* MySQL will now ask you to enter the password before each command."
 
     echo "* Create MySQL user."
@@ -496,7 +496,7 @@ insert_cronjob() {
 
   crontab -l | {
     cat
-    echo "* * * * * php /var/www/jexactyl/artisan schedule:run >> /dev/null 2>&1"
+    echo "* * * * * php /var/www/pterodactyl/artisan schedule:run >> /dev/null 2>&1"
   } | crontab -
 
   echo "* Cronjob installed!"
@@ -765,7 +765,7 @@ centos8_dep() {
 ##### OTHER OS SPECIFIC FUNCTIONS #####
 
 centos_php() {
-  curl -o /etc/php-fpm.d/www-jexactyl.conf $GITHUB_BASE_URL/configs/www-jexactyl.conf
+  curl -o /etc/php-fpm.d/www-pterodactyl.conf $GITHUB_BASE_URL/configs/www-pterodactyl.conf
 
   systemctl enable php-fpm
   systemctl start php-fpm
@@ -858,31 +858,31 @@ configure_nginx() {
     rm -rf /etc/nginx/conf.d/default
 
     # download new config
-    curl -o /etc/nginx/conf.d/jexactyl.conf $GITHUB_BASE_URL/configs/$DL_FILE
+    curl -o /etc/nginx/conf.d/pterodactyl.conf $GITHUB_BASE_URL/configs/$DL_FILE
 
     # replace all <domain> places with the correct domain
-    sed -i -e "s@<domain>@${FQDN}@g" /etc/nginx/conf.d/jexactyl.conf
+    sed -i -e "s@<domain>@${FQDN}@g" /etc/nginx/conf.d/pterodactyl.conf
 
     # replace all <php_socket> places with correct socket "path"
-    sed -i -e "s@<php_socket>@${PHP_SOCKET}@g" /etc/nginx/conf.d/jexactyl.conf
+    sed -i -e "s@<php_socket>@${PHP_SOCKET}@g" /etc/nginx/conf.d/pterodactyl.conf
   else
     # remove default config
     rm -rf /etc/nginx/sites-enabled/default
 
     # download new config
-    curl -o /etc/nginx/sites-available/jexactyl.conf $GITHUB_BASE_URL/configs/$DL_FILE
+    curl -o /etc/nginx/sites-available/pterodactyl.conf $GITHUB_BASE_URL/configs/$DL_FILE
 
     # replace all <domain> places with the correct domain
-    sed -i -e "s@<domain>@${FQDN}@g" /etc/nginx/sites-available/jexactyl.conf
+    sed -i -e "s@<domain>@${FQDN}@g" /etc/nginx/sites-available/pterodactyl.conf
 
     # replace all <php_socket> places with correct socket "path"
-    sed -i -e "s@<php_socket>@${PHP_SOCKET}@g" /etc/nginx/sites-available/jexactyl.conf
+    sed -i -e "s@<php_socket>@${PHP_SOCKET}@g" /etc/nginx/sites-available/pterodactyl.conf
 
     # on debian 9, TLS v1.3 is not supported (see #76)
-    [ "$OS" == "debian" ] && [ "$OS_VER_MAJOR" == "9" ] && sed -i 's/ TLSv1.3//' /etc/nginx/sites-available/jexactyl.conf
+    [ "$OS" == "debian" ] && [ "$OS_VER_MAJOR" == "9" ] && sed -i 's/ TLSv1.3//' /etc/nginx/sites-available/pterodactyl.conf
 
-    # enable jexactyl
-    ln -sf /etc/nginx/sites-available/jexactyl.conf /etc/nginx/sites-enabled/jexactyl.conf
+    # enable pterodactyl
+    ln -sf /etc/nginx/sites-available/pterodactyl.conf /etc/nginx/sites-enabled/pterodactyl.conf
   fi
 
   if [ "$ASSUME_SSL" == false ] && [ "$CONFIGURE_LETSENCRYPT" == false ]; then
@@ -940,8 +940,8 @@ perform_install() {
 
 main() {
   # check if we can detect an already existing installation
-  if [ -d "/var/www/jexactyl" ]; then
-    print_warning "The script has detected that you already have jexactyl panel on your system! You cannot run the script multiple times, it will fail!"
+  if [ -d "/var/www/pterodactyl" ]; then
+    print_warning "The script has detected that you already have Pterodactyl panel on your system! You cannot run the script multiple times, it will fail!"
     echo -e -n "* Are you sure you want to proceed? (y/N): "
     read -r CONFIRM_PROCEED
     if [[ ! "$CONFIRM_PROCEED" =~ [Yy] ]]; then
@@ -954,15 +954,15 @@ main() {
   detect_distro
 
   print_brake 70
-  echo "* jexactyl panel installation script @ $SCRIPT_RELEASE"
+  echo "* Pterodactyl panel installation script @ $SCRIPT_RELEASE"
   echo "*"
   echo "* Copyright (C) 2018 - 2022, Vilhelm Prytz, <vilhelm@prytznet.se>"
-  echo "* https://github.com/vilhelmprytz/jexactyl-installer"
+  echo "* https://github.com/vilhelmprytz/pterodactyl-installer"
   echo "*"
-  echo "* This script is not associated with the official jexactyl Project."
+  echo "* This script is not associated with the official Pterodactyl Project."
   echo "*"
   echo "* Running $OS version $OS_VER."
-  echo "* Latest jexactyl/jexactyl is $jexactyl_VERSION"
+  echo "* Latest pterodactyl/panel is $PTERODACTYL_VERSION"
   print_brake 70
 
   # checks if the system is compatible with this installation script
@@ -985,7 +985,7 @@ main() {
 
   MYSQL_USER="-"
   while [[ "$MYSQL_USER" == *"-"* ]]; do
-    required_input MYSQL_USER "Database username (jexactyl): " "" "jexactyl"
+    required_input MYSQL_USER "Database username (pterodactyl): " "" "pterodactyl"
     [[ "$MYSQL_USER" == *"-"* ]] && print_error "Database user cannot contain hyphens"
   done
 
@@ -1007,7 +1007,7 @@ main() {
     [ -z "$timezone_input" ] && timezone="Europe/Stockholm" # because köttbullar!
   done
 
-  email_input email "Provide the email address that will be used to configure Let's Encrypt and jexactyl: " "Email cannot be empty or invalid"
+  email_input email "Provide the email address that will be used to configure Let's Encrypt and Pterodactyl: " "Email cannot be empty or invalid"
 
   # Initial admin account
   email_input user_email "Email address for the initial admin account: " "Email cannot be empty or invalid"
@@ -1059,7 +1059,7 @@ main() {
 
 summary() {
   print_brake 62
-  echo "* jexactyl panel $jexactyl_VERSION with nginx on $OS"
+  echo "* Pterodactyl panel $PTERODACTYL_VERSION with nginx on $OS"
   echo "* Database name: $MYSQL_DB"
   echo "* Database user: $MYSQL_USER"
   echo "* Database password: (censored)"
