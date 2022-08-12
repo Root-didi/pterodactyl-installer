@@ -29,9 +29,9 @@ set -e
 #############################################################################
 
 SCRIPT_VERSION="v0.11.0"
-GITHUB_BASE_URL="https://github.com/Root-didi/pterodactyl-installer"
+GITHUB_BASE_URL="https://raw.githubusercontent.com/vilhelmprytz/pterodactyl-installer"
 
-LOG_PATH="/var/log/Jexactyl-installer.log"
+LOG_PATH="/var/log/pterodactyl-installer.log"
 
 # exit with error status code if user is not root
 if [[ $EUID -ne 0 ]]; then
