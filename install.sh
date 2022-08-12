@@ -29,7 +29,7 @@ set -e
 #############################################################################
 
 SCRIPT_VERSION="v0.11.0"
-GITHUB_BASE_URL="https://raw.githubusercontent.com/-didi/pterodactyl-installer"
+GITHUB_BASE_URL="https://raw.githubusercontent.com/Root-didi/pterodactyl-installer"
 
 LOG_PATH="/var/log/jexactyl-installer.log"
 
